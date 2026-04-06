@@ -8,9 +8,9 @@
 
 package org.opensearch.plugin.kafka;
 
+import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
-import org.apache.kafka.clients.admin.KafkaAdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.common.KafkaFuture;
@@ -71,7 +71,7 @@ public class KafkaUtils {
 
     private static <Rep> Rep getAdminClient(String bootstrapServer, Function<AdminClient, Rep> function) {
         try (
-            AdminClient adminClient = KafkaAdminClient.create(
+            AdminClient adminClient = (AdminClient) Admin.create(
                 Map.of(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServer, AdminClientConfig.CLIENT_ID_CONFIG, "test")
             )
         ) {

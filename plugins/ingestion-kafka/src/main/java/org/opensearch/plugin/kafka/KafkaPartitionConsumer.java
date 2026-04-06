@@ -14,7 +14,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
-import org.apache.kafka.clients.consumer.OffsetResetStrategy;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
@@ -204,10 +203,10 @@ public class KafkaPartitionConsumer implements IngestionShardConsumer<KafkaOffse
         if (offset < 0) {
             logger.warn("No message found for timestamp {}, fall back to auto.offset.reset policy", timestampMillis);
             String autoOffsetResetConfig = config.getAutoOffsetResetConfig();
-            if (OffsetResetStrategy.EARLIEST.toString().equals(autoOffsetResetConfig)) {
+            if ("earliest".equals(autoOffsetResetConfig)) {
                 logger.warn("The auto.offset.reset is set to earliest, seek to earliest pointer");
                 return earliestPointer();
-            } else if (OffsetResetStrategy.LATEST.toString().equals(autoOffsetResetConfig)) {
+            } else if ("latest".equals(autoOffsetResetConfig)) {
                 logger.warn("The auto.offset.reset is set to latest, seek to latest pointer");
                 return latestPointer();
             } else {
