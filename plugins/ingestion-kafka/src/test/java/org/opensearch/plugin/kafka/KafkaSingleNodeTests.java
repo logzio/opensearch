@@ -39,8 +39,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.KafkaContainer;
-import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.kafka.KafkaContainer;
 
 @ThreadLeakFilters(filters = KafkaSingleNodeTests.TestContainerThreadLeakFilter.class)
 public class KafkaSingleNodeTests extends OpenSearchSingleNodeTestCase {
@@ -217,7 +216,7 @@ public class KafkaSingleNodeTests extends OpenSearchSingleNodeTestCase {
     }
 
     private void setupKafka() {
-        kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.1"))
+        kafka = new KafkaContainer("apache/kafka:4.2.0")
             // disable topic auto creation
             .withEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "false");
         kafka.start();
