@@ -12,7 +12,7 @@ import com.carrotsearch.randomizedtesting.ThreadFilter;
 
 /**
  * The {@link org.testcontainers.images.TimeLimitedLoggedPullImageResultCallback} instance used by test containers,
- * for example {@link org.testcontainers.containers.KafkaContainer} creates a watcher daemon thread which is never
+ * for example {@link org.testcontainers.kafka.KafkaContainer} creates a watcher daemon thread which is never
  * stopped. This filter excludes that thread from the thread leak detection logic. It also excludes ryuk resource reaper
  * thread and pollers which is not closed on time.
  */
