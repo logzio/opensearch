@@ -20,11 +20,13 @@ import java.util.Map;
 public class KafkaSourceConfig {
     private final String PROP_TOPIC = "topic";
     private final String PROP_BOOTSTRAP_SERVERS = "bootstrap_servers";
+    private static final String PROP_CONSUMER_MODE = "consumer_mode";
 
     private final String topic;
     private final String bootstrapServers;
     private final String autoOffsetResetConfig;
     private final int maxPollRecords;
+    private final String consumerMode;
 
     private final Map<String, Object> consumerConfigsMap;
 
@@ -46,9 +48,12 @@ public class KafkaSourceConfig {
         // maxPollSize will be used instead.
         this.maxPollRecords = ConfigurationUtils.readIntProperty(params, ConsumerConfig.MAX_POLL_RECORDS_CONFIG, maxPollSize);
 
+        this.consumerMode = ConfigurationUtils.readStringProperty(params, PROP_CONSUMER_MODE, "assign");
+
         // remove metadata configurations
         consumerConfigsMap.remove(PROP_TOPIC);
         consumerConfigsMap.remove(PROP_BOOTSTRAP_SERVERS);
+        consumerConfigsMap.remove(PROP_CONSUMER_MODE);
 
         // add or overwrite required configurations with defaults if not present
         consumerConfigsMap.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, autoOffsetResetConfig);
@@ -79,6 +84,13 @@ public class KafkaSourceConfig {
      */
     public String getAutoOffsetResetConfig() {
         return autoOffsetResetConfig;
+    }
+
+    /**
+     * Get the consumer mode: "assign" (default), "subscribe", or "share"
+     */
+    public String getConsumerMode() {
+        return consumerMode;
     }
 
     public Map<String, Object> getConsumerConfigurations() {
