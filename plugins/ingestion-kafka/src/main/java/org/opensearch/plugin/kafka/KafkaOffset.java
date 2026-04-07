@@ -16,19 +16,35 @@ import org.opensearch.index.IngestionShardPointer;
 import java.nio.ByteBuffer;
 
 /**
- * Kafka offset.
+ * Kafka offset, optionally associated with a partition ID.
+ *
+ * <p>In assign mode, partitionId is -1 and asString() returns the offset only (e.g. "12345").
+ * In subscribe mode, partitionId is set and asString() returns "partitionId:offset" (e.g. "2:12345").
+ * This encoding is stored in Lucene commit data and parsed back by
+ * {@link KafkaConsumerFactory#parsePointerFromString(String)}.
  */
 public class KafkaOffset implements IngestionShardPointer {
 
     private final long offset;
+    private final int partitionId;
 
     /**
-     * Constructor
+     * Constructor for assign mode (no partition tracking).
      * @param offset the offset
      */
     public KafkaOffset(long offset) {
+        this(offset, -1);
+    }
+
+    /**
+     * Constructor with partition ID for subscribe mode.
+     * @param offset the offset
+     * @param partitionId the partition ID, or -1 for assign mode
+     */
+    public KafkaOffset(long offset, int partitionId) {
         assert offset >= 0;
         this.offset = offset;
+        this.partitionId = partitionId;
     }
 
     @Override
@@ -40,6 +56,9 @@ public class KafkaOffset implements IngestionShardPointer {
 
     @Override
     public String asString() {
+        if (partitionId >= 0) {
+            return partitionId + ":" + offset;
+        }
         return String.valueOf(offset);
     }
 
@@ -61,8 +80,19 @@ public class KafkaOffset implements IngestionShardPointer {
         return offset;
     }
 
+    /**
+     * Get the partition ID. Returns -1 in assign mode (partition implicit from shard ID).
+     * @return the partition ID
+     */
+    public int getPartitionId() {
+        return partitionId;
+    }
+
     @Override
     public String toString() {
+        if (partitionId >= 0) {
+            return "KafkaOffset{partition=" + partitionId + ", offset=" + offset + '}';
+        }
         return "KafkaOffset{" + "offset=" + offset + '}';
     }
 
