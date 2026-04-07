@@ -22,6 +22,8 @@ public class KafkaSourceConfig {
     private final String PROP_BOOTSTRAP_SERVERS = "bootstrap_servers";
     private static final String PROP_CONSUMER_MODE = "consumer_mode";
     private static final String PROP_SHARE_ACK_MODE = "share.acknowledgement.mode";
+    private static final String PROP_DLQ_TOPIC = "dlq.topic";
+    private static final String PROP_DLQ_BOOTSTRAP_SERVERS = "dlq.bootstrap_servers";
 
     private final String topic;
     private final String bootstrapServers;
@@ -29,6 +31,8 @@ public class KafkaSourceConfig {
     private final int maxPollRecords;
     private final String consumerMode;
     private final String shareAcknowledgementMode;
+    private final String dlqTopic;
+    private final String dlqBootstrapServers;
 
     private final Map<String, Object> consumerConfigsMap;
 
@@ -52,12 +56,16 @@ public class KafkaSourceConfig {
 
         this.consumerMode = ConfigurationUtils.readStringProperty(params, PROP_CONSUMER_MODE, "assign");
         this.shareAcknowledgementMode = ConfigurationUtils.readStringProperty(params, PROP_SHARE_ACK_MODE, "implicit");
+        this.dlqTopic = ConfigurationUtils.readOptionalStringProperty(params, PROP_DLQ_TOPIC);
+        this.dlqBootstrapServers = ConfigurationUtils.readStringProperty(params, PROP_DLQ_BOOTSTRAP_SERVERS, bootstrapServers);
 
         // remove metadata configurations
         consumerConfigsMap.remove(PROP_TOPIC);
         consumerConfigsMap.remove(PROP_BOOTSTRAP_SERVERS);
         consumerConfigsMap.remove(PROP_CONSUMER_MODE);
         consumerConfigsMap.remove(PROP_SHARE_ACK_MODE);
+        consumerConfigsMap.remove(PROP_DLQ_TOPIC);
+        consumerConfigsMap.remove(PROP_DLQ_BOOTSTRAP_SERVERS);
 
         // add or overwrite required configurations with defaults if not present
         consumerConfigsMap.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, autoOffsetResetConfig);
@@ -102,6 +110,20 @@ public class KafkaSourceConfig {
      */
     public String getShareAcknowledgementMode() {
         return shareAcknowledgementMode;
+    }
+
+    /**
+     * Get the DLQ topic name, or null if DLQ is not configured.
+     */
+    public String getDlqTopic() {
+        return dlqTopic;
+    }
+
+    /**
+     * Get the DLQ bootstrap servers. Defaults to the source bootstrap servers.
+     */
+    public String getDlqBootstrapServers() {
+        return dlqBootstrapServers;
     }
 
     public Map<String, Object> getConsumerConfigurations() {
