@@ -40,6 +40,7 @@ public class KafkaConsumerFactory
         String mode = config.getConsumerMode();
         return switch (mode.toLowerCase()) {
             case "subscribe" -> new KafkaGroupConsumer(clientId, config, shardId);
+            case "share" -> new KafkaShareGroupConsumer(clientId, config, shardId);
             default -> new KafkaPartitionConsumer(clientId, config, shardId);
         };
     }
