@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-message-wrapper
+  namespace: opensearch-benchmark
+  labels:
+    app: kafka-message-wrapper
+spec:
+  replicas: 4  # 4 instances × 10 partitions each = 40 source partitions covered
+  selector:
+    matchLabels:
+      app: kafka-message-wrapper
+  template:
+    metadata:
+      labels:
+        app: kafka-message-wrapper
+    spec:
+      containers:
+        - name: wrapper
+          image: REGISTRY/kafka-message-wrapper:latest  # Replace REGISTRY
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          env:
+            - name: SOURCE_TOPIC
+              value: "parsed-incoming-es-logs-us-east-1a-prod-22"
+            - name: SOURCE_BOOTSTRAP_SERVERS
+              value: "SOURCE_KAFKA_BROKERS"  # Replace
+            - name: TARGET_TOPIC
+              value: "ingestion-kafka-formatted-logs"
+            - name: TARGET_BOOTSTRAP_SERVERS
+              value: "TARGET_KAFKA_BROKERS"  # Replace
+            - name: GROUP_ID
+              value: "opensearch-wrapper-benchmark"
+            - name: ID_FIELD
+              value: "logzio-signature"
+            - name: TIMESTAMP_FIELD
+              value: "@timestamp"
+            - name: JAVA_OPTS
+              value: "-Xms256m -Xmx512m"
+          livenessProbe:
+            exec:
+              command: ["sh", "-c", "kill -0 1"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "kill -0 1"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      restartPolicy: Always
