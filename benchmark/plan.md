@@ -5,11 +5,11 @@
 - **Source topic:** `parsed-incoming-es-logs-us-east-1a-prod-22` (40 partitions, ~1M msgs/min)
 - **Destination topic:** `ingestion-kafka-formatted-logs` (5–7 partitions, matches shard count)
 - **Message format:** Mixed flat JSON — jaeger spans, audit logs, engine access logs. No `_id` field in messages. No envelope format.
-- **Cluster:** OpenSearch 3.5.0, existing production cluster
+- **Cluster:** OpenSearch 3.6.0, existing production cluster
 - **New nodes:** 3–5 dedicated nodes with `node.attr.box_type: kafka` for isolation
 - **Baseline template:** Account `300` — 7 shards, custom `logzio` analyzer, `index.mapping.total_fields.limit: 10000`
 - **Comparison:** ingestion-kafka `assign` vs `subscribe` vs `share` (not HTTP/gRPC — those are the existing push path baseline)
-- **Plugin source:** `logzio/OpenSearch` fork, branch `feature/ingestion-kafka-upgrade-4.2-3.5.0`, produces `ingestion-kafka-3.5.0.zip`
+- **Plugin source:** `logzio/OpenSearch` fork, branch `feature/ingestion-kafka-upgrade-4.2-3.6.0`, produces `ingestion-kafka-3.6.0.zip`
 - **Key constraint:** Source has 40 partitions, but destination topic has 5–7 partitions. The wrapper fans-in 40→N. For assign mode, `number_of_shards` must equal destination partition count.
 
 ---
@@ -35,10 +35,10 @@ ingestion-kafka-formatted-logs   (5–7 partitions, envelope format)
             │
             ▼
 ┌───────────────────────────────────────────────────────┐
-│  OpenSearch Cluster (3.5.0)                           │
+│  OpenSearch Cluster (3.6.0)                           │
 │                                                       │
 │  Dedicated nodes: box_type=kafka (3–5 nodes)          │
-│  Plugin: ingestion-kafka-3.5.0.zip (from fork)        │
+│  Plugin: ingestion-kafka-3.6.0.zip (from fork)        │
 │                                                       │
 │  Index: ingestion-kafka-benchmark-{mode}              │
 │    - Assign mode:    shards = partition count (N)     │
@@ -59,22 +59,22 @@ The source topic has 40 partitions. With 3–5 nodes and `total_shards_per_node:
 ### Step 1: Build the Plugin ZIP
 
 **Where:** Local machine or CI
-**Branch:** `feature/ingestion-kafka-upgrade-4.2-3.5.0` on `logzio/OpenSearch` fork
+**Branch:** `feature/ingestion-kafka-upgrade-4.2-3.6.0` on `logzio/OpenSearch` fork
 
 ```bash
 export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
 export PATH="$JAVA_HOME/bin:$PATH"
-git checkout feature/ingestion-kafka-upgrade-4.2-3.5.0
+git checkout feature/ingestion-kafka-upgrade-4.2-3.6.0
 ./gradlew :plugins:ingestion-kafka:assemble
-ls -la plugins/ingestion-kafka/build/distributions/ingestion-kafka-3.5.0.zip
+ls -la plugins/ingestion-kafka/build/distributions/ingestion-kafka-3.6.0.zip
 ```
 
-**Output:** `ingestion-kafka-3.5.0.zip` (~1.5MB)
+**Output:** `ingestion-kafka-3.6.0.zip` (~1.5MB)
 
 **Validation:** Verify version matches cluster:
 ```bash
-unzip -p ingestion-kafka-3.5.0.zip ingestion-kafka/plugin-descriptor.properties | grep opensearch.version
-# Expected: opensearch.version=3.5.0
+unzip -p ingestion-kafka-3.6.0.zip ingestion-kafka/plugin-descriptor.properties | grep opensearch.version
+# Expected: opensearch.version=3.6.0
 ```
 
 ---
@@ -94,7 +94,7 @@ node.roles: [data]
 **Plugin installation** (at node provisioning time, before OpenSearch starts):
 
 ```bash
-bin/opensearch-plugin install file:///path/to/ingestion-kafka-3.5.0.zip
+bin/opensearch-plugin install file:///path/to/ingestion-kafka-3.6.0.zip
 ```
 
 **Validation after nodes join:**
@@ -570,7 +570,7 @@ This gives the push-path baseline without changing anything.
 
 | Risk                                              | Mitigation                                                                                   |
 | ------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Plugin version mismatch (3.5.0 vs cluster)        | Verify `plugin-descriptor.properties` before install                                         |
+| Plugin version mismatch (3.6.0 vs cluster)        | Verify `plugin-descriptor.properties` before install                                         |
 | Mixed message types cause mapping explosion       | `total_fields.limit: 10000` + `error_strategy: drop`                                         |
 | Share mode requires Kafka 4.2 brokers             | Skip share test if prod Kafka < 4.2, or use separate cluster                                 |
 | Wrapper throughput bottleneck                     | Scale wrapper instances; monitor consumer lag on source topic                                |
