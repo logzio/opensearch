@@ -90,7 +90,7 @@ dependencies {
 
   implementation "org.checkerframework:checker-qual:3.52.1"
 
-  runtimeOnly "io.opentelemetry:opentelemetry-api:1.47.0"
+  runtimeOnly "io.opentelemetry:opentelemetry-api:1.62.0"
   runtimeOnly "io.opentelemetry:opentelemetry-context:1.47.0"
   runtimeOnly "com.google.api.grpc:proto-google-cloud-storage-v2:2.60.0"
   runtimeOnly "io.grpc:grpc-api:1.71.0"
@@ -447,3 +447,4 @@ task gcsThirdPartyTest(type: Test) {
   }
 }
 check.dependsOn(gcsThirdPartyTest)
+
